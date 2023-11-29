@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -25,6 +26,16 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+
+        $this->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('api/jobs/*')) { // <- Add your condition here
+                $response = [
+                    'message' => 'Job record not found.'
+                ];
+                return response()->json($response, 404);
+            }
         });
     }
 }
