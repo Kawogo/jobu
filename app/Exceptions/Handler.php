@@ -32,7 +32,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (NotFoundHttpException $e, $request) {
             if ($request->is('api/jobs/*')) { // <- Add your condition here
                 $response = [
-                    'message' => 'Job record not found.'
+                    'message' => $e->getMessage()
                 ];
                 return response()->json($response, 404);
             }

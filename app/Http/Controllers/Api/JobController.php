@@ -67,7 +67,7 @@ class JobController extends Controller
      */
     public function show(Job $job)
     {
-        return response()->json(['data' => $job->load('requirements')]);          
+        return response()->json(['job' => $job->load('requirements')]);          
     }
 
     /**
