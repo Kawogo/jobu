@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\JobController;
+use App\Http\Controllers\api\RequirementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -26,8 +28,9 @@ Route::post(RoutePath::for('login', '/login'), [AuthenticatedSessionController::
 Route::post(RoutePath::for('logout', '/logout'), [AuthenticatedSessionController::class, 'destroy'])
 ->name('logout');
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Route::apiResource('jobs', [])
+Route::apiResource('jobs', JobController::class);
+Route::apiResource('jobs.requirements', RequirementController::class)->scoped(['job_id' => 'requirement']);
