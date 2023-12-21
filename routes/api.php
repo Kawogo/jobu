@@ -28,9 +28,11 @@ Route::post(RoutePath::for('login', '/login'), [AuthenticatedSessionController::
 Route::post(RoutePath::for('logout', '/logout'), [AuthenticatedSessionController::class, 'destroy'])
 ->name('logout');
 
-Route::get('/user', function (Request $request) {
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('jobs', JobController::class);
-Route::apiResource('jobs.requirements', RequirementController::class)->scoped(['job_id' => 'requirement']);
+Route::group(['middleware' => ['auth:sanctum']], function() {
+    Route::apiResource('jobs', JobController::class);
+    Route::apiResource('jobs.requirements', RequirementController::class)->scoped(['job_id' => 'requirement']);
+});
