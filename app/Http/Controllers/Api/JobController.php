@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\JobRequest;
 use App\Models\Job;
+use App\Services\JobService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
 {
+    public $service;
+
+    public function __construct(JobService $service) {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,32 +32,14 @@ class JobController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(JobRequest $request)
     {
-        $validated = $request->validate(
-            [
-                'title' => 'required',
-                'location' => 'required',
-                'description' => 'required',
-                'requirements' => 'array|required',
-                'requirements.*.name'=> 'required'
-            ]
-        );
 
 
         try {
             DB::beginTransaction();
 
-            $job = Job::create($validated);
-
-            foreach ($validated['requirements'] as $requirement) {
-                $job->requirements()->create(['name' => $requirement['name']]);
-            }
-
-            $response = [
-                'message' => 'Job was created successfully.',
-                'data' => $job->load('requirements')
-            ];
+            $response = $this->service->store($request->validated());
 
             DB::commit();
 
@@ -73,43 +63,15 @@ class JobController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Job $job)
+    public function update(JobRequest $request, Job $job)
     {
-       $validated = $request->validate(
-        [
-            'title' => 'required',
-            'location' => 'required',
-            'description' => 'required',
-            'requirements' => 'array|required',
-            'requirements.*'=> 'required'
-        ]
-        );
 
 
         try {
 
             DB::beginTransaction();
 
-            $job->update([
-                'title' => $validated['title'],
-                'location' => $validated['location'],
-                'description' => $validated['description'],
-            ]);
-    
-            $requirements = collect($validated['requirements']);
-            
-            
-            // TODO: Perform this on the requirements controller
-            // $job->requirements()->whereNotIn('id', $requirements->pluck('id'))->delete();
-    
-            $requirements->each(function($requirement) use($job){
-                $job->requirements()->updateOrCreate(['id' => $requirement['id'] ?? null], $requirement);
-            });
-    
-            $response = [
-                'message' => 'Job updated successfully',
-                'data' => $job->load('requirements')
-            ];
+            $response = $this->service->update($request->validated(), $job);
 
             DB::commit();
     
